@@ -2,7 +2,6 @@ import nodemailer from "nodemailer"
 import dotenv from 'dotenv'
 dotenv.config()
 
-
 let transporter = nodemailer.createTransport({
     service: 'gmail',
     host: process.env.HOST_MAILTRAP,
@@ -51,7 +50,7 @@ const sendMailToRecoveryPassword = async(userMail,token)=>{
 
 // send mail with defined transport object
 const sendMailToPaciente = async(userMail,password)=>{
-    let info = await transport.sendMail({
+    let info = await transporter.sendMail({
     from: 'admin@vet.com',
     to: userMail,
     subject: "Correo de bienvenida",
@@ -73,4 +72,3 @@ export {
     sendMailToRecoveryPassword,
     sendMailToPaciente
 }
-export default sendMailToUser

@@ -5,8 +5,9 @@
 import express from 'express'
 import dotenv from 'dotenv'
 import cors from 'cors';
-
 import routerPacientes from './routers/paciente_routes.js'
+import routerTratamientos from './routers/tratamiento_routes.js'
+
 
 //Podemos usar otro nombre de ruta gracias al default  de abajo
 import routerVeterinarios from './routers/veterinario_routes.js'
@@ -31,6 +32,7 @@ app.get('/',(req,res)=>{
 
 app.use('/api',routerVeterinarios)
 app.use('/api',routerPacientes)
+app.use('/api',routerTratamientos)
 // Exportar la instancia de express por medio de app
 
 
