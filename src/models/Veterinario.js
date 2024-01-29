@@ -1,9 +1,11 @@
-//Importar el Schema y el modelo de mongoose
+//Importar el esquema y el modelo de moongose
 import {Schema, model} from 'mongoose'
 
-//Importar el bcrypt para cifrar las contraseñas
+//Importar bcrypt cifrar las contraseñas
 import bcrypt from "bcryptjs"
 
+
+//Crear el Schema
 const veterinarioSchema = new Schema({
     nombre:{
         type:String,
@@ -71,5 +73,4 @@ veterinarioSchema.methods.crearToken = function(){
     return tokenGenerado
 }
 
-//Crear un modelo Veterinario "Tabla BDD"
 export default model('Veterinario',veterinarioSchema)

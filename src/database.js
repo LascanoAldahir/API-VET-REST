@@ -1,23 +1,22 @@
-//Impórtar mongoose
+//Importar mongose
 import mongoose from 'mongoose'
 
-//Permitir que SOLO los campos denifidos en el Schema sean almacenados
+//Permite que solo los campos en el schema sean almacenadas
 //en la BDD
 mongoose.set('strictQuery', true)
 
 
-//CREAR UNA FUNCION LLAMADA CONNECTION ()
+
+//Crear una funcion llamada connection()
 const connection = async()=>{
     try {
-        //establecer la conexion con la BDD
         const {connection} = await mongoose.connect(process.env.MONGODB_URI)
-  
-        //Presentar la conexion en consola
         console.log(`Database is connected on ${connection.host} - ${connection.port}`)
     } catch (error) {
-        //Capturar Error en la conexion    
         console.log(error);
     }
 }
-//exportar la funcion
+
+
+//Exportar la funcion
 export default  connection

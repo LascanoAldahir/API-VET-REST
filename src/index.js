@@ -1,12 +1,14 @@
-//Importar la variable app
+//iMPORAT LA VARIABLE APP
 import app from './server.js'
 
-//Inmportar la funcion connection()
+//Importando la funcion con la BDD
 import connection from './database.js';
-//Haciendo uso de la funcion connection()
+
+//llamando la funcion connection()
 connection()
 
-//Iniciar el servidor en el puerto 3000
+
 app.listen(app.get('port'),()=>{
     console.log(`Server ok on http://localhost:${app.get('port')}`);
 })
+

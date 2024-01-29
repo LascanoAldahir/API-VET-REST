@@ -1,7 +1,9 @@
 import { sendMailToPaciente } from "../config/nodemailer.js"
-import generarJWT from "../helpers/crearJWT.js"
 import Paciente from "../models/Paciente.js"
 import mongoose from "mongoose"
+import generarJWT from "../helpers/crearJWT.js"
+import Tratamiento from "../models/Tratamiento.js"
+
 
 const loginPaciente = async(req,res)=>{
     const {email,password} = req.body
@@ -35,18 +37,32 @@ const perfilPaciente =(req,res)=>{
     res.status(200).json(req.pacienteBDD)
 }
 
+
+
+
 const listarPacientes = async (req,res)=>{
+
     const pacientes = await Paciente.find({estado:true}).where('veterinario').equals(req.veterinarioBDD).select("-salida -createdAt -updatedAt -__v").populate('veterinario','_id nombre apellido')
     res.status(200).json(pacientes)
 }
 
-//metodo para ver el detalle de un paciente en particular
+
+
+
+
+
 const detallePaciente = async(req,res)=>{
     const {id} = req.params
     if( !mongoose.Types.ObjectId.isValid(id) ) return res.status(404).json({msg:`Lo sentimos, no existe el veterinario ${id}`});
     const paciente = await Paciente.findById(id).select("-createdAt -updatedAt -__v").populate('veterinario','_id nombre apellido')
-    res.status(200).json(paciente)
+    const tratamientos = await Tratamiento.find({estado:true}).where('paciente').equals(id)
+    res.status(200).json({
+        paciente,
+        tratamientos
+    })
 }
+
+
 
 const registrarPaciente = async(req,res)=>{
     const {email} = req.body
@@ -62,6 +78,7 @@ const registrarPaciente = async(req,res)=>{
     res.status(200).json({msg:"Registro exitoso del paciente y correo enviado"})
 }
 
+
 const actualizarPaciente = async(req,res)=>{
     const {id} = req.params
     if (Object.values(req.body).includes("")) return res.status(400).json({msg:"Lo sentimos, debes llenar todos los campos"})
@@ -69,6 +86,7 @@ const actualizarPaciente = async(req,res)=>{
     await Paciente.findByIdAndUpdate(req.params.id,req.body)
     res.status(200).json({msg:"Actualización exitosa del paciente"})
 }
+
 
 const eliminarPaciente = async (req,res)=>{
     const {id} = req.params
@@ -79,9 +97,10 @@ const eliminarPaciente = async (req,res)=>{
     res.status(200).json({msg:"Fecha de salida del paciente registrado exitosamente"})
 }
 
+
 export {
 		loginPaciente,
-		perfilPaciente, 
+		perfilPaciente,
         listarPacientes,
         detallePaciente,
         registrarPaciente,

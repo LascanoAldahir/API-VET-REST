@@ -1,28 +1,32 @@
-import { sendMailToUser, sendMailToRecoveryPassword } from "../config/nodemailer.js"
 import Veterinario from "../models/Veterinario.js"
+import { sendMailToUser, sendMailToRecoveryPassword } from "../config/nodemailer.js"
 import generarJWT from "../helpers/crearJWT.js"
 import mongoose from "mongoose";
+
 
 const login = async(req,res)=>{
     const {email,password} = req.body
     if (Object.values(req.body).includes("")) return res.status(404).json({msg:"Lo sentimos, debes llenar todos los campos"})
-    const veterinarioBDD = await Veterinario.findOne({email}).select("-status -__v -token -updatedAt -createdAt")
+    const veterinarioBDD = await Veterinario.findOne({email})
     if(veterinarioBDD?.confirmEmail===false) return res.status(403).json({msg:"Lo sentimos, debe verificar su cuenta"})
     if(!veterinarioBDD) return res.status(404).json({msg:"Lo sentimos, el usuario no se encuentra registrado"})
     const verificarPassword = await veterinarioBDD.matchPassword(password)
     if(!verificarPassword) return res.status(404).json({msg:"Lo sentimos, el password no es el correcto"})
+
     const token = generarJWT(veterinarioBDD._id,"veterinario")
-    const {nombre,apellido,direccion,telefono,_id} = veterinarioBDD
+		const {nombre,apellido,direccion,telefono,_id} = veterinarioBDD
     res.status(200).json({
-    token,
-    nombre,
-    apellido,
-    direccion,
-    telefono,
-    _id,
-    email:veterinarioBDD.email
+        token,
+        nombre,
+        apellido,
+        direccion,
+        telefono,
+        _id,
+        email:veterinarioBDD.email
     })
 }
+
+
 
 const perfil =(req,res)=>{
     delete req.veterinarioBDD.token
@@ -34,30 +38,23 @@ const perfil =(req,res)=>{
 }
 
 
-//Metodo para registrar
+//Metodo para registrar un nuevo veterinario
 const registro = async (req,res)=>{
-    //Desestructura los campos
     const {email,password} = req.body
-    // Validar todos los campos
     if (Object.values(req.body).includes("")) return res.status(400).json({msg:"Lo sentimos, debes llenar todos los campos"})
-    //Obtener el usuario de la BD en base al email
     const verificarEmailBDD = await Veterinario.findOne({email})
-    //Validar que el email sea nuevo
     if(verificarEmailBDD) return res.status(400).json({msg:"Lo sentimos, el email ya se encuentra registrado"})
-    //Creando la nuevva instancia del veterinario
     const nuevoVeterinario = new Veterinario(req.body)
-    //Encryptar el password
     nuevoVeterinario.password = await nuevoVeterinario.encrypPassword(password)
 
-    //Crear el token => mail
     const token = nuevoVeterinario.crearToken()
-    //enviar email
-    await sendMailToUser(email, token)
-    //Guarda en una BD
+    await sendMailToUser(email,token)
     await nuevoVeterinario.save()
-    //Responder
     res.status(200).json({msg:"Revisa tu correo electrónico para confirmar tu cuenta"})
 }
+
+
+
 
 const confirmEmail = async (req,res)=>{
     if(!(req.params.token)) return res.status(400).json({msg:"Lo sentimos, no se puede validar la cuenta"})
@@ -66,12 +63,15 @@ const confirmEmail = async (req,res)=>{
     veterinarioBDD.token = null
     veterinarioBDD.confirmEmail=true
     await veterinarioBDD.save()
-    res.status(200).json({msg:"Token confirmado, ya puedes iniciar sesión"})
+    res.status(200).json({msg:"Token confirmado, ya puedes iniciar sesión"}) 
 }
+
+
 
 const listarVeterinarios = (req,res)=>{
     res.status(200).json({res:'lista de veterinarios registrados'})
 }
+
 const detalleVeterinario = async(req,res)=>{
     const {id} = req.params
     if( !mongoose.Types.ObjectId.isValid(id) ) return res.status(404).json({msg:`Lo sentimos, debe ser un id válido`});
@@ -79,6 +79,7 @@ const detalleVeterinario = async(req,res)=>{
     if(!veterinarioBDD) return res.status(404).json({msg:`Lo sentimos, no existe el veterinario ${id}`})
     res.status(200).json({msg:veterinarioBDD})
 }
+
 const actualizarPerfil = async (req,res)=>{
     const {id} = req.params
     if( !mongoose.Types.ObjectId.isValid(id) ) return res.status(404).json({msg:`Lo sentimos, debe ser un id válido`});
@@ -102,6 +103,7 @@ const actualizarPerfil = async (req,res)=>{
     res.status(200).json({msg:"Perfil actualizado correctamente"})
 }
 
+
 const actualizarPassword = async (req,res)=>{
     const veterinarioBDD = await Veterinario.findById(req.veterinarioBDD._id)
     if(!veterinarioBDD) return res.status(404).json({msg:`Lo sentimos, no existe el veterinario ${id}`})
@@ -111,6 +113,7 @@ const actualizarPassword = async (req,res)=>{
     await veterinarioBDD.save()
     res.status(200).json({msg:"Password actualizado correctamente"})
 }
+
 
 const recuperarPassword = async(req,res)=>{
     const {email} = req.body
@@ -129,8 +132,9 @@ const comprobarTokenPasword = async (req,res)=>{
     const veterinarioBDD = await Veterinario.findOne({token:req.params.token})
     if(veterinarioBDD?.token !== req.params.token) return res.status(404).json({msg:"Lo sentimos, no se puede validar la cuenta"})
     await veterinarioBDD.save()
-    res.status(200).json({msg:"Token confirmado, ya puedes crear tu nuevo password"})
+    res.status(200).json({msg:"Token confirmado, ya puedes crear tu nuevo password"}) 
 }
+
 
 const nuevoPassword = async (req,res)=>{
     const{password,confirmpassword} = req.body
@@ -141,19 +145,20 @@ const nuevoPassword = async (req,res)=>{
     veterinarioBDD.token = null
     veterinarioBDD.password = await veterinarioBDD.encrypPassword(password)
     await veterinarioBDD.save()
-    res.status(200).json({msg:"Felicitaciones, ya puedes iniciar sesión con tu nuevo password"})
+    res.status(200).json({msg:"Felicitaciones, ya puedes iniciar sesión con tu nuevo password"}) 
 }
 
+
 export {
-login,
-perfil,
-registro,
-confirmEmail,
-listarVeterinarios,
-detalleVeterinario,
-actualizarPerfil,
-actualizarPassword,
-recuperarPassword,
-comprobarTokenPasword,
-nuevoPassword
+    login,
+    perfil,
+    registro,
+    confirmEmail,
+    listarVeterinarios,
+    detalleVeterinario,
+    actualizarPerfil,
+    actualizarPassword,
+	recuperarPassword,
+    comprobarTokenPasword,
+	nuevoPassword
 }

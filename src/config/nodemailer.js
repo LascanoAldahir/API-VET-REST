@@ -2,6 +2,7 @@ import nodemailer from "nodemailer"
 import dotenv from 'dotenv'
 dotenv.config()
 
+
 let transporter = nodemailer.createTransport({
     service: 'gmail',
     host: process.env.HOST_MAILTRAP,
@@ -20,6 +21,7 @@ const sendMailToUser = (userMail, token) => {
         subject: "Verifica tu cuenta",
         html: `<p>Hola, haz clic <a href="${process.env.URL_BACKEND}confirmar/${encodeURIComponent(token)}">aquí</a> para confirmar tu cuenta.</p>`
     };
+    
 
     transporter.sendMail(mailOptions, function(error, info){
         if (error) {
@@ -29,6 +31,7 @@ const sendMailToUser = (userMail, token) => {
         }
     });
 };
+
 
 
 // send mail with defined transport object
@@ -47,6 +50,8 @@ const sendMailToRecoveryPassword = async(userMail,token)=>{
     });
     console.log("Mensaje enviado satisfactoriamente: ", info.messageId);
 }
+
+
 
 // send mail with defined transport object
 const sendMailToPaciente = async(userMail,password)=>{
@@ -72,3 +77,5 @@ export {
     sendMailToRecoveryPassword,
     sendMailToPaciente
 }
+
+
